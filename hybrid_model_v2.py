@@ -1,41 +1,38 @@
-# hybrid_model_v2.py
+import lightgbm as lgb
+import numpy as np
+import pandas as pd
+from scipy.optimize import minimize
 
-# This script implements a hybrid model for the SP500 prediction that includes:  
+# Función para calcular el CVaR
+def calcular_cvar(pesos, retornos, alpha=0.05):
+    port_return = np.sum(retornos.mean() * pesos) * 252
+    port_volatility = np.sqrt(np.dot(pesos.T, np.dot(retornos.cov() * 252, pesos)))
+    # Simulación de Monte Carlo
+    sims = np.random.normal(port_return, port_volatility, 10000)
+    # Calcular el CVaR
+    var = np.percentile(sims, alpha * 100)
+    return -var
 
-## Features Implemented:
+# Características macroeconómicas (VIX, tasas del tesoro, etc.)
+# Aquí irían las funciones para obtener y procesar las características macro
 
-1. **LightGBM**: A gradient boosting framework that uses tree-based learning algorithms.
-2. **Macro Features**: Incorporation of macroeconomic indicators to enhance prediction accuracy.
-3. **CVaR Optimization**: Conditional Value at Risk optimization to assess the risk of the portfolio. 
-4. **Advanced Indicators**: Integration of advanced technical indicators for better market understanding.
+# Modelo de LightGBM
+X = pd.DataFrame()  # Aquí deberías cargar tus datos
+y = pd.Series()     # Aquí deberías cargar tus etiquetas
+model = lgb.LGBMRegressor(n_estimators=500, learning_rate=0.05, num_leaves=31)
+model.fit(X, y)
 
-## Model Implementation Steps:
+# Optimización del CVaR
+resultado = minimize(calcular_cvar, x0=np.ones(X.shape[1]) / X.shape[1], args=(retornos,), method='SLSQP', constraints={'type': 'eq', 'fun': lambda x: np.sum(x) - 1})
 
-- Load necessary libraries (LightGBM, Pandas, NumPy, etc.)
-- Preprocess the dataset (handling missing values, normalization)
-- Feature engineering (including macro features and technical indicators)
-- Split data into training and testing sets
-- Train the LightGBM model with hyperparameter tuning
-- Evaluate model performance using various metrics
-- Implement CVaR optimization methodology
+# Implementación de indicadores avanzados
+# Hurst exponent
+# VWAP Z-score
+# ADX regime
+# Rolling beta
+# Aquí irían las funciones para calcular estos indicadores
 
-## Example Usage:
-
-```python
+# Función principal
 if __name__ == '__main__':
-    # Load data
-    data = load_data()
-    
-    # Preprocess data
-    processed_data = preprocess(data)
-    
-    # Train model
-    model = train_model(processed_data)
-    
-    # Optimize portfolio using CVaR
-    optimized_portfolio = optimize_cvar(model)
-```
-
-# Note:
-- Remember to install required libraries. 
-- Ensure to validate the results through backtesting.
+    # Cargar los datos y ejecutar el modelo
+    pass
